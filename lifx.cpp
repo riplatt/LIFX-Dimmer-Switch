@@ -219,6 +219,16 @@ void lifx::getStatus()
     }
 }
 
+void lifx::getLocations()
+{
+    _device.getLocation();
+}
+
+void lifx::getGroups()
+{
+    _device.getGroup();
+}
+
 void lifx::msgIn(byte packetBuffer[128])
 {
     /*
@@ -247,7 +257,7 @@ void lifx::msgIn(byte packetBuffer[128])
     uint16_t lifxPacketType = packetBuffer[32] + (packetBuffer[33] << 8);
     uint16_t lifxReservedD = packetBuffer[34] + (packetBuffer[35] << 8);
 
-    // Log.trace("lifx::msgIn -- PacketType: %d", lifxPacketType);
+    //Log.trace("lifx::msgIn -- PacketType: %d", lifxPacketType);
 
     Log.trace("lifx::msgIn - Header:");
     Log.trace("lifx::msgIn -- Frame:");
@@ -269,7 +279,7 @@ void lifx::msgIn(byte packetBuffer[128])
     Log.trace("lifx::msgIn --- PacketType: %d", lifxPacketType);
     Log.trace("lifx::msgIn --- ReservedD: %d", lifxReservedD);
 
-    Log.trace("lifx::msgIn - Payload:");
+    Log.trace("lifx::msgIn - Payload: %d", lifxPacketType);
 
     switch (lifxPacketType)
     {
@@ -362,6 +372,12 @@ void lifx::msgIn(byte packetBuffer[128])
 
         break;
     }
+    case _deviceAcknowledgement:
+    {
+        Log.trace("lifx::msgIn -- Payload: Acknowledgement");
+        break;
+    }
+
     case _lightStatePower: // Sent by a device to provide the current power level.
     {
         uint16_t _level;
@@ -400,15 +416,15 @@ void lifx::msgIn(byte packetBuffer[128])
         //_lable              = _lable2.data();
         _reservedB = packetBuffer[80] + (packetBuffer[81] << 8) + (packetBuffer[82] << 16) + (packetBuffer[83] << 24) + (packetBuffer[84] << 32) + (packetBuffer[85] << 40) + (packetBuffer[86] << 48) + (packetBuffer[87] << 56);
 
-        Log.trace("lifx::msgIn - Raw:- Hue:%d, Saturation:%d, Brightness:%d, Kelvin:%d", _hsbk.hue, _hsbk.saturation, _hsbk.brightness, _hsbk.kelvin);
-        Log.trace("lifx::msgIn - Hue: %0.2f", (float)(_hsbk.hue / (65535 / 359)));
-        Log.trace("lifx::msgIn - Saturation: %0.2f", ((float)_hsbk.saturation / 65535.00) * 100.00);
-        Log.trace("lifx::msgIn - Brightness: %0.2f", ((float)_hsbk.brightness / 65535.00) * 100.00);
-        Log.trace("lifx::msgIn - Kelvin: %d", _hsbk.kelvin);
-        Log.trace("lifx::msgIn - ReservedA: %d", _reservedA);
-        Log.trace("lifx::msgIn - Power: %d", _power);
-        Log.trace("lifx::msgIn - Lable: %s", _lable2.data());
-        Log.trace("lifx::msgIn - ReservedB: %d", _reservedB);
+        //Log.trace("lifx::msgIn - Raw:- Hue:%d, Saturation:%d, Brightness:%d, Kelvin:%d", _hsbk.hue, _hsbk.saturation, _hsbk.brightness, _hsbk.kelvin);
+        Log.trace("lifx::msgIn -- Hue: %0.2f", (float)(_hsbk.hue / (65535 / 359)));
+        Log.trace("lifx::msgIn -- Saturation: %0.2f", ((float)_hsbk.saturation / 65535.00) * 100.00);
+        Log.trace("lifx::msgIn -- Brightness: %0.2f", ((float)_hsbk.brightness / 65535.00) * 100.00);
+        Log.trace("lifx::msgIn -- Kelvin: %d", _hsbk.kelvin);
+        Log.trace("lifx::msgIn -- ReservedA: %d", _reservedA);
+        Log.trace("lifx::msgIn -- Power: %d", _power);
+        Log.trace("lifx::msgIn -- Lable: %s", _lable2.data());
+        Log.trace("lifx::msgIn -- ReservedB: %d", _reservedB);
 
         for (auto &Light : Lights)
         {
@@ -418,26 +434,73 @@ void lifx::msgIn(byte packetBuffer[128])
                 Light.setPowerLevel(_power);
             }
         }
+        break;
+    }
+    case _deviceStateLocation:
+    {
+        /*location	    byte array, size: 16 bytes
+          label	        string, size: 32 bytes
+          updated_at	unsigned 64-bit integer */
+
+          //std::vector<byte> _location;
+          std::vector<byte> _lableData;
+          uint64_t _updatedAt;
+
+        /*_location = {packetBuffer[36], packetBuffer[37], packetBuffer[38], packetBuffer[39], packetBuffer[40], packetBuffer[41], packetBuffer[42], packetBuffer[43], packetBuffer[44], packetBuffer[45], packetBuffer[46], packetBuffer[47], packetBuffer[48], packetBuffer[49], packetBuffer[50], packetBuffer[51]};
+        std::string _lable1(_location.begin(), _location.end());*/
+        _lableData = {packetBuffer[52], packetBuffer[53], packetBuffer[54], packetBuffer[55], packetBuffer[56], packetBuffer[57], packetBuffer[58], packetBuffer[59], packetBuffer[60], packetBuffer[61], packetBuffer[62], packetBuffer[63], packetBuffer[64], packetBuffer[65], packetBuffer[66], packetBuffer[67], packetBuffer[68], packetBuffer[69], packetBuffer[70], packetBuffer[71], packetBuffer[72], packetBuffer[73], packetBuffer[74], packetBuffer[75], packetBuffer[76], packetBuffer[77], packetBuffer[78], packetBuffer[79], packetBuffer[80], packetBuffer[81], packetBuffer[82], packetBuffer[83]};
+        std::string _lable2(_lableData.begin(), _lableData.end());
+        _updatedAt = packetBuffer[84] + (packetBuffer[85] << 8) + (packetBuffer[86] << 16) + (packetBuffer[87] << 24) + (packetBuffer[88] << 32) + (packetBuffer[89] << 40) + (packetBuffer[90] << 48) + (packetBuffer[91] << 56);
+
+        Log.trace("lifx::msgIn -- Location: 0x{%02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X}", packetBuffer[36], packetBuffer[37], packetBuffer[38], packetBuffer[39], packetBuffer[40], packetBuffer[41], packetBuffer[42], packetBuffer[43], packetBuffer[44], packetBuffer[45], packetBuffer[46], packetBuffer[47], packetBuffer[48], packetBuffer[49], packetBuffer[50], packetBuffer[51]);
+        Log.trace("lifx::msgIn -- Lable: %s", _lable2.data());
+        Log.trace("lifx::msgIn -- Updated At: %d", _updatedAt);
+
+        break;
+    }
+    case _deviceStateGroup:
+    {
+        /*location	    byte array, size: 16 bytes
+          label	        string, size: 32 bytes
+          updated_at	unsigned 64-bit integer */
+
+          //std::vector<byte> _location;
+          std::vector<byte> _lableData;
+          uint64_t _updatedAt;
+
+        /*_location = {packetBuffer[36], packetBuffer[37], packetBuffer[38], packetBuffer[39], packetBuffer[40], packetBuffer[41], packetBuffer[42], packetBuffer[43], packetBuffer[44], packetBuffer[45], packetBuffer[46], packetBuffer[47], packetBuffer[48], packetBuffer[49], packetBuffer[50], packetBuffer[51]};
+        std::string _lable1(_location.begin(), _location.end());*/
+        _lableData = {packetBuffer[52], packetBuffer[53], packetBuffer[54], packetBuffer[55], packetBuffer[56], packetBuffer[57], packetBuffer[58], packetBuffer[59], packetBuffer[60], packetBuffer[61], packetBuffer[62], packetBuffer[63], packetBuffer[64], packetBuffer[65], packetBuffer[66], packetBuffer[67], packetBuffer[68], packetBuffer[69], packetBuffer[70], packetBuffer[71], packetBuffer[72], packetBuffer[73], packetBuffer[74], packetBuffer[75], packetBuffer[76], packetBuffer[77], packetBuffer[78], packetBuffer[79], packetBuffer[80], packetBuffer[81], packetBuffer[82], packetBuffer[83]};
+        std::string _lable2(_lableData.begin(), _lableData.end());
+        _updatedAt = packetBuffer[84] + (packetBuffer[85] << 8) + (packetBuffer[86] << 16) + (packetBuffer[87] << 24) + (packetBuffer[88] << 32) + (packetBuffer[89] << 40) + (packetBuffer[90] << 48) + (packetBuffer[91] << 56);
+
+        Log.trace("lifx::msgIn -- Location: 0x{%02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X}", packetBuffer[36], packetBuffer[37], packetBuffer[38], packetBuffer[39], packetBuffer[40], packetBuffer[41], packetBuffer[42], packetBuffer[43], packetBuffer[44], packetBuffer[45], packetBuffer[46], packetBuffer[47], packetBuffer[48], packetBuffer[49], packetBuffer[50], packetBuffer[51]);
+        Log.trace("lifx::msgIn -- Lable: %s", _lable2.data());
+        Log.trace("lifx::msgIn -- Updated At: %d", _updatedAt);
+
+        break;
     }
     default:
     {
-        Log.trace("lifx::msgIn - Unknowen Payload:  0x ");
-        String _tmp = "";
+        
+        _tmp = "lifx::msgIn - Unknowen Payload:  0x ";
         for (int i = 36; i < lifxSize; i++)
         {
-            Serial.printf("%02X ", packetBuffer[i]);
+            _tmp.concat(String::format("%02X ", packetBuffer[i]));
+            //Serial.printf("%02X ", packetBuffer[i]);
         }
-        Serial.println("");
+        //Serial.println("");
+        Log.trace(_tmp);
+        break;
     }
-    break;
-    }
-    Log.trace("lifx::msgIn - Raw:");
-    Serial.print("  0x ");
+
+    } //end switch
+
+    /*_tmp = "lifx::msgIn - Raw: 0x ";
     for (int j = 0; j < lifxSize; j++)
     {
-        Serial.printf("%02X ", packetBuffer[j]);
+        _tmp.concat(packetBuffer[j]);
+        _tmp.concat(" ");
     }
-    Serial.println("");
-
-    Serial.println("---");
+    Log.trace(_tmp);*/
 }

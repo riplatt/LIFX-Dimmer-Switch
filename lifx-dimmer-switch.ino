@@ -212,10 +212,13 @@ void loop()
     _trigger = false;
   }
   // get lamp status
-  if (((_now - lastMsgTime > 500) && (_msgSent == true)) || (_now - lastMsgTime > 30000))
+  if ((((_now - lastMsgTime > 500) && (_msgSent == true)) || (_now - lastMsgTime > 30000)) && LIFX.Lights.size() > 0)
   {
+    Log.info("Getting status - Lights Vetor Size: %d", LIFX.Lights.size());
     Log.info("Getting status...");
     LIFX.getStatus();
+    LIFX.getLocations();
+    LIFX.getGroups();
     _msgSent = false;
   }
   //
@@ -224,10 +227,10 @@ void loop()
   if (_udpPacketSize > 0)
   {
     Log.info("UDP packet size: %d", _udpPacketSize);
-    byte _packetBuffer[128]; //buffer to hold incoming packet
+    byte _packetBuffer[_udpPacketSize]; //buffer to hold incoming packet
 
     // Read first 128 of data received
-    _lifxUDP.read(_packetBuffer, 128);
+    _lifxUDP.read(_packetBuffer, _udpPacketSize);
 
     // Ignore other chars
     _lifxUDP.flush();
