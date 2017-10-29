@@ -3,6 +3,8 @@
  */
 
 #include "lifxUDP.h"
+// setup logger
+Logger udpLog("app.udp");
 
 lifxUDP::lifxUDP()
 {
@@ -19,13 +21,13 @@ void lifxUDP::initialise(IPAddress broadcastIP, uint32_t remotePort)
 void lifxUDP::add(std::vector<byte> udpPacket)
 {
 	_udpPackets.push_back(udpPacket);
-  //Serial.printlnf(Time.timeStr() + ":" + millis() + " - lifxUDP add - Message added, vector size: %d, udpPacket size: %d", _udpPackets.size(), sizeof(udpPacket));
+  udpLog.trace("lifxUDP::add - Message added, vector size: %d, udpPacket size: %d", _udpPackets.size(), sizeof(udpPacket));
 
 }
 
 void lifxUDP::send()
 {
-  //Serial.printlnf(Time.timeStr() + ":" + millis() + " - lifxUDP send - Sending...");
+  udpLog.trace("lifxUDP::send - Sending...");
   if (WiFi.ready())
   {
     for(auto &_vPacket : _udpPackets)
@@ -33,15 +35,15 @@ void lifxUDP::send()
       int _sent = _myUdp.sendPacket(&_vPacket[0], _vPacket.size(), _broadcastIP, _remotePort);
       if( _sent < 0)
       {
-        //Serial.printlnf(Time.timeStr() + ":" + millis() + " - lifxUDP send - Error: Can't send UDP Code:%d", _sent);
+        udpLog.error("lifxUDP::send - Error: Can't send UDP Code:%d", _sent);
         _reconnect();
       } else {
-        //Serial.printlnf(Time.timeStr() + ":" + millis() + " - lifxUDP send - %d sent...", _sent);
+        udpLog.trace("lifxUDP::send - %d sent...", _sent);
       }
     }
     _udpPackets.clear();
   } else {
-    //Serial.printlnf(Time.timeStr() + ":" + millis() + " - lifxUDP send - Error: WiFi is down...");
+    udpLog.error("lifxUDP::send - Error: WiFi is down...");
   }
 }
 
@@ -81,12 +83,11 @@ void lifxUDP::_reconnect()
   _myUdp.stop();
   delay(5000);
   _status = _myUdp.begin(_remotePort);
-  //Serial.printlnf(Time.timeStr() + ":" + millis() + " - lifxUDP _reconnect - Begin Status Code:%d", _status);
+  udpLog.trace("lifxUDP::_reconnect - Begin Status Code:%d", _status);
 }
 
 bool lifxUDP::available()
 {
-  //Serial.printlnf(Time.timeStr() + ":" + millis() + " - lifxUDP available - Available: %d", _udpPackets.size());
   if(_udpPackets.size() > 0)
   {
     return true;

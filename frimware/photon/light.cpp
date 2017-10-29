@@ -56,6 +56,7 @@ void light::get()
     /* header */
     Header header = Header();
     int16_t headerSize = sizeof(header);
+    //Log.info("light::get - Size if Header %d", headerSize);
 
     /* payload */
     // N/A
@@ -177,7 +178,7 @@ void light::setColor(uint16_t hue, uint16_t saturation, uint16_t brightness, uin
     //header.reservedA[4] = 0;
     //header.reservedA[5] = 0;
     //header.reservedB = 0;
-    //header.ack_required = 0;
+    header.ack_required = 1;
     //header.res_required = 0;
     //header.sequence = 0;
     //header.reservedC = 0;
@@ -283,8 +284,8 @@ void light::setPower(uint16_t level, uint32_t duration)
     //header.reservedA[4] = 0;
     //header.reservedA[5] = 0;
     //header.reservedB = 0;
-    //header.ack_required = 0;
-    header.res_required = 1;
+    header.ack_required = 1;
+    //header.res_required = 0;
     //header.sequence = 0;
     //header.reservedC = 0;
     header.type = _lightSetPower;

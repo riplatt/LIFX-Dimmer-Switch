@@ -2,15 +2,23 @@
 #include "button.h"
 #include "lifx.h"
 
-SerialLogHandler logHandler(LOG_LEVEL_ALL);
+#define LOGGING_ON TRUE
+
+#if (LOGGING_ON)
+  SerialLogHandler logHandler(LOG_LEVEL_WARN, 
+  {
+    { "app", LOG_LEVEL_ALL},
+    { "app.action", LOG_LEVEL_ALL},
+    { "app.lifx", LOG_LEVEL_INFO},
+    { "app.device", LOG_LEVEL_ALL},
+    { "app.udp", LOG_LEVEL_WARN}
+  });
+#endif
+
+Logger actionLog("app.action");
+Logger _udpLog("app.udp");
 
 void funcEncoder();
-//void funcEncoderA();
-//void funcEncoderB();
-//void encoderARising();
-//void encoderAFalling();
-//void encoderBRising();
-//void encoderBFalling();
 
 int _buttonA = D4;
 int _buttonB = D1;
@@ -31,8 +39,6 @@ volatile bool _encoderLastB = false;
 volatile int _encoderPos = 0;
 volatile unsigned long _msEncoder;
 
-//int prevPos = 0;
-//int value = 0;
 int _state = 0;
 bool _msgSent = false;
 bool _msgAction = false;
@@ -50,7 +56,7 @@ uint32_t _lastModeTime = 0;
 uint32_t _lastEncoderTime = 0;
 uint32_t _encoderSpeed = 0;
 float _encoderPercent;
-float _encoderSpeedMultiplier;
+float _encoderSpeedMultiplier = 2.0;
 
 button btnA = button();
 button btnB = button();
@@ -119,21 +125,21 @@ void loop()
   {
     buttonLastA = !buttonLastA;
     btnValueA = !digitalRead(_buttonA);
-    Log.info("Button A: %s", (btnValueA ? "True" : "False"));
+    actionLog.trace("Button A: %s", (btnValueA ? "True" : "False"));
   }
 
   if (digitalRead(_buttonB) != buttonLastB)
   {
     buttonLastB = !buttonLastB;
     btnValueB = !digitalRead(_buttonB);
-    Log.info("Button B: %s", (btnValueB ? "True" : "False"));
+    actionLog.trace("Button B: %s", (btnValueB ? "True" : "False"));
   }
   // Check button A (Push Button) for actions
   btnA.check(btnValueA, _now);
   // Switch On/Off
   if (btnA.getClick())
   {
-    Log.info("Button A Clicked...");
+    actionLog.trace("Button A: Clicked...");
     LIFX.togglePower();
     btnA.setClick(false);
     _msgAction = true;
@@ -141,13 +147,13 @@ void loop()
 
   if (btnA.getDoubleClick())
   {
-    Log.info("Button A Double Clicked...");
+    actionLog.trace("Button A: Double Clicked...");
     btnA.setDoubleClick(false);
   }
 
   if (btnA.getHold())
   {
-    Log.info("Button A Held...");
+    actionLog.trace("Button A: Held...");
     LIFX.discover();
     btnA.setHold(false);
     _msgAction = true;
@@ -155,7 +161,7 @@ void loop()
 
   if (btnA.getLongHold())
   {
-    Log.info("Button A Held Longer...");
+    actionLog.trace("Button A: Long Hold...");
     btnA.setLongHold(false);
   }
   // Check button B (Encoder Switch) for actions
@@ -163,29 +169,29 @@ void loop()
   // change from dimmer mode
   if (btnB.getClick())
   {
-    Log.info("Button B Clicked...");
+    actionLog.trace("Button B: Clicked...");
     _dimmMode = !_dimmMode;
+    actionLog.trace("Button B: Encoder Mode %s", (_dimmMode ? "Dimmer" : "Colour Cycle"));
     btnB.setClick(false);
     _lastModeTime = _now;
   }
 
   if (btnB.getDoubleClick())
   {
-    Log.info("Button B Double Clicked...");
+    actionLog.trace("Button B: Double Clicked...");
     btnB.setDoubleClick(false);
   }
   // Toggle between colour and white
   if (btnB.getHold())
   {
-    Log.info("Button B Held...");
+    actionLog.trace("Button B: Held...");
     LIFX.toggleColor();
     btnB.setHold(false);
-    _msgAction = true;
   }
 
   if (btnB.getLongHold())
   {
-    Log.info("Button B Held Longer...");
+    actionLog.trace("Button B: Long Hold...");
     btnB.setLongHold(false);
   }
 
@@ -200,11 +206,11 @@ void loop()
   {
     if (_dimmMode == true)
     {
-      LIFX.dimLights(_encoderPercent * 3.0);
+      LIFX.dimLights(_encoderPercent * _encoderSpeedMultiplier);
     }
     else
     {
-      LIFX.cycleColor(_encoderPercent * 3.0);
+      LIFX.cycleColor(_encoderPercent * _encoderSpeedMultiplier);
     }
     _lastEncoderTime = _now;
     _lastModeTime = _now;
@@ -212,10 +218,13 @@ void loop()
     _trigger = false;
   }
   // get lamp status
-  if (((_now - lastMsgTime > 500) && (_msgSent == true)) || (_now - lastMsgTime > 30000))
+  if ((((_now - lastMsgTime > 500) && (_msgSent == true)) || (_now - lastMsgTime > 30000)) && LIFX.Lights.size() > 0)
   {
-    Log.info("Getting status...");
+    actionLog.trace("Getting status - Lights Vetor Size: %d", LIFX.Lights.size());
+    actionLog.info("Getting status...");
     LIFX.getStatus();
+    LIFX.getLocations();
+    LIFX.getGroups();
     _msgSent = false;
   }
   //
@@ -223,11 +232,11 @@ void loop()
   _udpPacketSize = _lifxUDP.parsePacket();
   if (_udpPacketSize > 0)
   {
-    Log.info("UDP packet size: %d", _udpPacketSize);
-    byte _packetBuffer[128]; //buffer to hold incoming packet
+    _udpLog.info("Incoming UDP packet size: %d", _udpPacketSize);
+    byte _packetBuffer[_udpPacketSize]; //buffer to hold incoming packet
 
     // Read first 128 of data received
-    _lifxUDP.read(_packetBuffer, 128);
+    _lifxUDP.read(_packetBuffer, _udpPacketSize);
 
     // Ignore other chars
     _lifxUDP.flush();
@@ -235,7 +244,7 @@ void loop()
     // Store sender ip and port
     IPAddress senderIP = _lifxUDP.remoteIP();
     int port = _lifxUDP.remotePort();
-    // Log.info("%lu - IP:%d.%d.%d.%d:%d", now, senderIP[0], senderIP[1], senderIP[2], senderIP[3], port);
+    _udpLog.trace("Sender IP:%d.%d.%d.%d:%d", senderIP[0], senderIP[1], senderIP[2], senderIP[3], port);
 
     // translate data
     LIFX.msgIn(_packetBuffer);

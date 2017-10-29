@@ -16,6 +16,8 @@
             void setRemotePort(uint16_t remotePort);
             void getService();
             void getPower();
+            void getLocation();
+            void getGroup();
 
             /* Members */
             struct Header
@@ -47,6 +49,7 @@
             lifxUDP* _deviceUdp;
             IPAddress _broadcastIP;
         	uint16_t _remotePort;
+            String _tmp;
 
     };
 

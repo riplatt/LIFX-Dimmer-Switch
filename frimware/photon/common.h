@@ -10,10 +10,8 @@
     #include "lifxUDP.h"
 
     // System setting
+    // #define _DEBUG 0
     
-    #define _DEBUG 0
-    //#define Serial if(_DEBUG)Serial
-
     extern uint16_t _waitingForMsg;
     extern uint32_t _myID;
     extern uint32_t _msgSentTime;
@@ -72,6 +70,10 @@
         _deviceGetInfo = 34,
         _deviceStateInfo = 35,
         _deviceAcknowledgement = 45,
+        _deviceGetLocation = 48,
+        _deviceStateLocation = 50,
+        _deviceGetGroup = 51,
+        _deviceStateGroup = 53,
         _deviceEchoRequest = 58,
         _deviceEchoResponse = 59,
         _lightGet = 101,
