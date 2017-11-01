@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="8.4.0">
+<eagle version="8.4.1">
 <drawing>
 <settings>
 <setting alwaysvectorfont="yes"/>
@@ -23,7 +23,7 @@
 <layer number="13" name="Route13" color="4" fill="5" visible="no" active="no"/>
 <layer number="14" name="Route14" color="1" fill="6" visible="no" active="no"/>
 <layer number="15" name="Route15" color="4" fill="6" visible="no" active="no"/>
-<layer number="16" name="Bottom" color="1" fill="1" visible="yes" active="yes"/>
+<layer number="16" name="Bottom" color="1" fill="1" visible="no" active="yes"/>
 <layer number="17" name="Pads" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="18" name="Vias" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="19" name="Unrouted" color="6" fill="1" visible="yes" active="yes"/>
@@ -222,6 +222,7 @@
 <text x="22.7965" y="71.6026" size="1.016" layer="21" ratio="12" rot="R90" align="center-left">VBAT</text>
 <text x="20.2565" y="71.6026" size="1.016" layer="21" ratio="12" rot="R90" align="center-left">RST</text>
 <text x="17.7165" y="71.6026" size="1.016" layer="21" ratio="12" rot="R90" align="center-left">3V3</text>
+<dimension x1="5.08" y1="45.72" x2="5.08" y2="10.16" x3="-10.16" y3="27.94" textsize="1.778" layer="1"/>
 </plain>
 <libraries>
 <library name="Mtronik-protection">
@@ -904,6 +905,7 @@ These rules have been curated by SparkFuns DFM commitee. After doing much resear
 <param name="slThermalsForVias" value="0"/>
 <param name="dpMaxLengthDifference" value="10mm"/>
 <param name="dpGapFactor" value="2.5"/>
+<param name="checkAngle" value="0"/>
 <param name="checkFont" value="1"/>
 <param name="checkRestrict" value="1"/>
 <param name="checkStop" value="0"/>
