@@ -113,7 +113,7 @@ void lifx::togglePower()
         uint16_t level = Light.getPowerLevel();
         // Serial.printlnf("lifx::togglePower - Light: %d, Current Power Level %d", i, level);
         level = level > 0 ? 0 : 65535;
-        Light.setPower(level, 200);
+        Light.setPower(level);
     }
 }
 
@@ -185,7 +185,7 @@ void lifx::cycleColor(float step)
             }
             _hsbk.kelvin = (uint16_t)_kelvin;
         }
-        Light.setColor(_hsbk, 200);
+        Light.setColor(_hsbk);
     }
 }
 
