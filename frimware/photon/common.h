@@ -40,6 +40,28 @@
         struct _fingerPosition  fingerPositions[5];
     };
 
+    struct Header
+    {
+        /* frame */
+        uint16_t size;
+        uint16_t protocol : 12;
+        uint8_t addressable : 1;
+        uint8_t tagged : 1;
+        uint8_t origin : 2;
+        uint32_t source;
+        /* frame address */
+        uint8_t target[8];
+        uint8_t reservedA[6];
+        uint8_t res_required : 1;
+        uint8_t ack_required : 1;
+        uint8_t reservedB : 6;
+        uint8_t sequence;
+        /* protocol header */
+        uint64_t reservedC;
+        uint16_t type;
+        uint16_t reservedD;
+    } __attribute__((__packed__));
+
     struct HSBK
     {
         uint16_t hue;
@@ -83,5 +105,7 @@
         _lightSetPower = 117,            // Sent to change the light power level.
         _lightStatePower = 118
     };
+
+
 
 #endif

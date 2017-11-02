@@ -76,8 +76,12 @@ void device::getService()
 
     /* Send UDP Packet */
     // TODO
-    std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
-    _deviceUdp->add(data);
+    std::vector<byte> _payload(udpPacket, udpPacket + sizeof(udpPacket));
+    _deviceUdp->add(_broadcastIP, _payload);
+
+    // std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
+    // _deviceUdp->add(data);
+
     deviceLog.info("deivce::getService - udpPacket size: %d", sizeof(udpPacket));
 
     _tmp = "deivce::getService - UDP: 0x";
@@ -137,9 +141,12 @@ void device::getPower()
     memcpy(&udpPacket, &header, headerSize);
 
     /* Send UDP Packet */
-    std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
-    _deviceUdp->add(data);
-    //_deviceUdp.add(udpPacket);
+    std::vector<byte> _payload(udpPacket, udpPacket + sizeof(udpPacket));
+    _deviceUdp->add(_broadcastIP, _payload);
+
+    // std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
+    // _deviceUdp->add(data);
+
     deviceLog.info("deivce::getPower - udpPacket size: %d", sizeof(udpPacket));
 
     _tmp = "deivce::getPower - UDP: 0x";
@@ -198,9 +205,12 @@ void device::getLocation()
     memcpy(&udpPacket, &header, headerSize);
 
     /* Send UDP Packet */
-    std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
-    _deviceUdp->add(data);
-    //_deviceUdp.add(udpPacket);
+    std::vector<byte> _payload(udpPacket, udpPacket + sizeof(udpPacket));
+    _deviceUdp->add(_broadcastIP, _payload);
+
+    // std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
+    // _deviceUdp->add(data);
+
     deviceLog.info("device::getLocation - udpPacket size: %d", sizeof(udpPacket));
 
     _tmp = "device::getLocation - UDP: 0x";
@@ -260,9 +270,12 @@ void device::getGroup()
     memcpy(&udpPacket, &header, headerSize);
 
     /* Send UDP Packet */
-    std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
-    _deviceUdp->add(data);
-    //_deviceUdp.add(udpPacket);
+    std::vector<byte> _payload(udpPacket, udpPacket + sizeof(udpPacket));
+    _deviceUdp->add(_broadcastIP, _payload);
+
+    // std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
+    // _deviceUdp->add(data);
+
     deviceLog.info("device::getGroup - udpPacket size: %d", sizeof(udpPacket));
 
     _tmp = "device::getGroup - UDP: 0x";

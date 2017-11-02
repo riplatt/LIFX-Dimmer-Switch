@@ -18,14 +18,24 @@ void lifxUDP::initialise(IPAddress broadcastIP, uint32_t remotePort)
   _myUdp.begin(_remotePort);
 }
 
-void lifxUDP::add(std::vector<byte> udpPacket)
+/* void lifxUDP::add(std::vector<byte> udpPacket)
 {
 	_udpPackets.push_back(udpPacket);
   udpLog.trace("lifxUDP::add - Message added, vector size: %d, udpPacket size: %d", _udpPackets.size(), sizeof(udpPacket));
 
+} */
+
+void lifxUDP::add(IPAddress IP,  std::vector<byte> Payload)
+{
+  udpMsg _udpMsg;
+  _udpMsg.destinationIP = IP;
+  _udpMsg.payload = Payload;
+	_udpPayload.push_back(_udpMsg);
+  udpLog.info("lifxUDP::add - Message added, vector size: %d, udpPacket size: %d, destinationIP: %d.%d.%d.%d", _udpPayload.size(), sizeof(Payload), IP[0], IP[1], IP[2], IP[3]);
+
 }
 
-void lifxUDP::send()
+/* void lifxUDP::send()
 {
   udpLog.trace("lifxUDP::send - Sending...");
   if (WiFi.ready())
@@ -38,10 +48,32 @@ void lifxUDP::send()
         udpLog.error("lifxUDP::send - Error: Can't send UDP Code:%d", _sent);
         _reconnect();
       } else {
-        udpLog.trace("lifxUDP::send - %d sent...", _sent);
+        udpLog.info("lifxUDP::send - %d sent...", _sent);
       }
     }
     _udpPackets.clear();
+  } else {
+    udpLog.error("lifxUDP::send - Error: WiFi is down...");
+  }
+} */
+
+void lifxUDP::send()
+{
+  udpLog.trace("lifxUDP::send - Sending...");
+  if (WiFi.ready())
+  {
+    for(auto &_Payload : _udpPayload)
+    {
+      int _sent = _myUdp.sendPacket(&_Payload.payload[0], _Payload.payload.size(), _Payload.destinationIP, _remotePort);
+      if( _sent < 0)
+      {
+        udpLog.error("lifxUDP::send - Error: Can't send UDP Code:%d", _sent);
+        _reconnect();
+      } else {
+        udpLog.info("lifxUDP::send - Sent %d bytes of data to %d.%d.%d.%d", _sent, _Payload.destinationIP[0], _Payload.destinationIP[1], _Payload.destinationIP[2], _Payload.destinationIP[3] );
+      }
+    }
+    _udpPayload.clear();
   } else {
     udpLog.error("lifxUDP::send - Error: WiFi is down...");
   }
@@ -88,9 +120,16 @@ void lifxUDP::_reconnect()
 
 bool lifxUDP::available()
 {
-  if(_udpPackets.size() > 0)
+  // if(_udpPackets.size() > 0)
+  // {
+  //   return true;
+  // }
+  // return false;
+
+  if(_udpPayload.size() > 0)
   {
     return true;
   }
   return false;
+  
 }

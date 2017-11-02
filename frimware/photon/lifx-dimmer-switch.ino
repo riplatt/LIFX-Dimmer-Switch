@@ -9,9 +9,10 @@
   {
     { "app", LOG_LEVEL_ALL},
     { "app.action", LOG_LEVEL_ALL},
-    { "app.lifx", LOG_LEVEL_INFO},
+    { "app.light", LOG_LEVEL_ALL},
+    { "app.lifx", LOG_LEVEL_WARN},
     { "app.device", LOG_LEVEL_ALL},
-    { "app.udp", LOG_LEVEL_WARN}
+    { "app.udp", LOG_LEVEL_INFO}
   });
 #endif
 
@@ -247,7 +248,7 @@ void loop()
     _udpLog.trace("Sender IP:%d.%d.%d.%d:%d", senderIP[0], senderIP[1], senderIP[2], senderIP[3], port);
 
     // translate data
-    LIFX.msgIn(_packetBuffer);
+    LIFX.msgIn(_packetBuffer, senderIP);
     // Set last time we saw a msg
     lastMsgTime = _now;
   }

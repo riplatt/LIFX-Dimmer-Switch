@@ -37,7 +37,7 @@ void lifx::discover()
     _device.getPower();
 }
 
-void lifx::addLight(uint8_t mac[6], uint32_t port)
+void lifx::addLight(uint8_t mac[6], IPAddress ip, uint32_t port)
 {
     // Serial.printlnf("lifx addLight...");
     int i;
@@ -63,6 +63,7 @@ void lifx::addLight(uint8_t mac[6], uint32_t port)
         {
             Lights.back().setMAC(mac);
             Lights.back().setPort(port);
+            Lights.back().setIP(ip);
             Lights.back().setUDP(_lifxUdp);
             Lights.back().setBroadcastIP(_broadcastIP);
             Lights.back().setRemotePort(_remotePort);
@@ -112,7 +113,7 @@ void lifx::togglePower()
         uint16_t level = Light.getPowerLevel();
         // Serial.printlnf("lifx::togglePower - Light: %d, Current Power Level %d", i, level);
         level = level > 0 ? 0 : 65535;
-        Light.setPower(level);
+        Light.setPower(level, 200);
     }
 }
 
@@ -125,16 +126,19 @@ void lifx::toggleColor()
         _hsbk = Light.getHSBK();
         if (_hsbk.saturation > 0)
         {
+            // is colour mode, save colour state, get last white status and set to white mode
             Light.setLastColorHSBK(_hsbk);
             _hsbk.saturation = 0;
+            _hsbk = Light.getLastWhiteHSBK();
             _colorMode = false;
         }
         else
         {
+            // is white mode, save white state, get last white status and set to colour mode
             Light.setLastWhiteHSBK(_hsbk);
             _hsbk.saturation = 65535;
+            _hsbk = Light.getLastColorHSBK();
             _colorMode = true;
-            Light.setLastColorHSBK(_hsbk);
         }
         Light.setColorMode(_colorMode);
         Light.setColor(_hsbk);
@@ -181,7 +185,7 @@ void lifx::cycleColor(float step)
             }
             _hsbk.kelvin = (uint16_t)_kelvin;
         }
-        Light.setColor(_hsbk);
+        Light.setColor(_hsbk, 200);
     }
 }
 
@@ -210,7 +214,7 @@ void lifx::dimLights(float step)
         }
         // send new brightness
         _hsbk.brightness = (uint16_t)_brightness;
-        Light.setColor(_hsbk);
+        Light.setColor(_hsbk, 200);
     }
 }
 
@@ -232,7 +236,7 @@ void lifx::getGroups()
     _device.getGroup();
 }
 
-void lifx::msgIn(byte packetBuffer[128])
+void lifx::msgIn(byte packetBuffer[128], IPAddress ip)
 {
     /*
         is it a lifx msg
@@ -297,7 +301,6 @@ void lifx::msgIn(byte packetBuffer[128])
         lifxLog.trace("lifx::msgIn -- Service: %d", _service);
         lifxLog.trace("lifx::msgIn -- Port: %d", _port);
 
-        //_waitingForMsg = 0;
         if (lifxSource = _myID)
         {
             // we sent the msg that this is in response to
@@ -313,7 +316,6 @@ void lifx::msgIn(byte packetBuffer[128])
 
         lifxLog.trace("lifx::msgIn -- Level: %d", _level);
 
-        //_waitingForMsg = 0;
         if (lifxSource = _myID)
         {
             uint8_t mac[6];
@@ -326,7 +328,7 @@ void lifx::msgIn(byte packetBuffer[128])
 
             if (_level > 0)
             {
-                addLight(mac, 56700);
+                addLight(mac, ip, 56700);
             }
             else
             {
@@ -435,6 +437,14 @@ void lifx::msgIn(byte packetBuffer[128])
             {
                 Light.setHSBK(_hsbk);
                 Light.setPowerLevel(_power);
+                if (_hsbk.saturation > 0)
+                {
+                    // White Mode
+                    Light.setLastWhiteHSBK(_hsbk);
+                }else{
+                    // Colour Mode
+                    Light.setLastColorHSBK(_hsbk);
+                }
             }
         }
         break;
@@ -445,9 +455,9 @@ void lifx::msgIn(byte packetBuffer[128])
           label	        string, size: 32 bytes
           updated_at	unsigned 64-bit integer */
 
-          //std::vector<byte> _location;
-          std::vector<byte> _lableData;
-          uint64_t _updatedAt;
+        //std::vector<byte> _location;
+        std::vector<byte> _lableData;
+        uint64_t _updatedAt;
 
         /*_location = {packetBuffer[36], packetBuffer[37], packetBuffer[38], packetBuffer[39], packetBuffer[40], packetBuffer[41], packetBuffer[42], packetBuffer[43], packetBuffer[44], packetBuffer[45], packetBuffer[46], packetBuffer[47], packetBuffer[48], packetBuffer[49], packetBuffer[50], packetBuffer[51]};
         std::string _lable1(_location.begin(), _location.end());*/
@@ -467,9 +477,9 @@ void lifx::msgIn(byte packetBuffer[128])
           label	        string, size: 32 bytes
           updated_at	unsigned 64-bit integer */
 
-          //std::vector<byte> _location;
-          std::vector<byte> _lableData;
-          uint64_t _updatedAt;
+        //std::vector<byte> _location;
+        std::vector<byte> _lableData;
+        uint64_t _updatedAt;
 
         /*_location = {packetBuffer[36], packetBuffer[37], packetBuffer[38], packetBuffer[39], packetBuffer[40], packetBuffer[41], packetBuffer[42], packetBuffer[43], packetBuffer[44], packetBuffer[45], packetBuffer[46], packetBuffer[47], packetBuffer[48], packetBuffer[49], packetBuffer[50], packetBuffer[51]};
         std::string _lable1(_location.begin(), _location.end());*/
@@ -485,7 +495,7 @@ void lifx::msgIn(byte packetBuffer[128])
     }
     default:
     {
-        
+
         _tmp = "lifx::msgIn - Unknowen Payload:  0x ";
         for (int i = 36; i < lifxSize; i++)
         {
@@ -498,12 +508,4 @@ void lifx::msgIn(byte packetBuffer[128])
     }
 
     } //end switch
-
-    /*_tmp = "lifx::msgIn - Raw: 0x ";
-    for (int j = 0; j < lifxSize; j++)
-    {
-        _tmp.concat(packetBuffer[j]);
-        _tmp.concat(" ");
-    }
-    lifxLog.trace(_tmp);*/
 }

@@ -4,6 +4,9 @@
 
 #include "light.h"
 
+// setup logger
+Logger lightLog("app.light");
+
 light::light()
 {
     _lamp = Lamp();
@@ -11,31 +14,31 @@ light::light()
 
 void light::setUDP(lifxUDP *udpRef)
 {
-    // Serial.printlnf("light setUDP...");
+    lightLog.trace("light::setUDP...");
     _lightUdp = udpRef;
 }
 
 void light::setBroadcastIP(IPAddress broadcastIP)
 {
-    // Serial.printlnf("light setBroadcastIP...");
+    lightLog.trace("light::setBroadcastIP...");
     _broadcastIP = broadcastIP;
 }
 
 void light::setRemotePort(uint16_t remotePort)
 {
-    // Serial.printlnf("light setRemotePort...");
+    lightLog.trace("light::setRemotePort...");
     _remotePort = remotePort;
 }
 
-void light::setIP(uint8_t ip[4])
+void light::setIP(IPAddress ip)
 {
-    // Serial.println("Setting IP...");
+    lightLog.trace("light::setIP...");
     memcpy(&_lamp.ip, &ip, sizeof(ip));
 }
 
 void light::setMAC(uint8_t mac[6])
 {
-    // Serial.printlnf("light setMAC...");
+    // lightLog.trace("light setMAC...");
     //memcpy(&__lamp.mac, &mac, sizeof(mac));
     _lamp.mac[0] = mac[0];
     _lamp.mac[1] = mac[1];
@@ -100,27 +103,19 @@ void light::get()
     // N/A
 
     /* Send UDP Packet */
-    // TODO
-    std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
-    _lightUdp->add(data);
+    // Add to UDP stack
+    std::vector<byte> _payload(udpPacket, udpPacket + sizeof(udpPacket));
+    _lightUdp->add(_lamp.ip, _payload);
 
-   /*if (WiFi.ready()) {
-        // Serial.printlnf("Light get - Sending UDP to 192.168.1.255:%d", _lamp.port);
-        _lightUdp.beginPacket(_broadcastIP, _lamp.port);
-        _lightUdp.write(udpPacket, sizeof(udpPacket));
-        _lightUdp.endPacket();
-        _msgSentTime = millis();
-        _msgSent = true;
-    }*/
+    // std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
+    // _lightUdp->add(data);
 
-    #if _DEBUG
-        Serial.printf(Time.timeStr() + ":" + millis() + " - Light get - UDP: 0x");
-        for(uint8_t i = 0; i < sizeof(udpPacket); i++)
-        {
-            Serial.printf("%02x ", udpPacket[i]);
-        }
-        Serial.println("");
-    #endif
+    _tmp = "light::get - UDP: 0x";
+    for(uint8_t i = 0; i < sizeof(udpPacket); i++)
+    {
+        _tmp.concat(String::format("%02X ", udpPacket[i]));
+    }
+    lightLog.trace(_tmp);
 
 }
 
@@ -217,33 +212,25 @@ void light::setColor(uint16_t hue, uint16_t saturation, uint16_t brightness, uin
     }
 
     /* Send UDP Packet */
-    // TODO
-    std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
-    _lightUdp->add(data);
+    // Add to UDP stack
+    std::vector<byte> _payload(udpPacket, udpPacket + sizeof(udpPacket));
+    _lightUdp->add(_lamp.ip, _payload);
 
-    /*if (WiFi.ready()) {
-        // Serial.printlnf("Light setColor - Sending UDP to 192.168.1.255:%d", _lamp.port);
-        _lightUdp.beginPacket(_broadcastIP, _lamp.port);
-        _lightUdp.write(udpPacket, sizeof(udpPacket));
-        _lightUdp.endPacket();
-        _msgSentTime = millis();
-        _msgSent = true;
-    }*/
+    // std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
+    // _lightUdp->add(data);
 
-    #if _DEBUG > 1
-        Serial.printf(Time.timeStr() + ":" + millis() + " - Light setColor - UDP: 0x");
-        for(uint8_t i = 0; i < sizeof(udpPacket); i++)
-        {
-            Serial.printf("%02x ", udpPacket[i]);
-        }
-        Serial.println("");
-    #endif
+    _tmp = "light::setColor - UDP: 0x";
+    for(uint8_t i = 0; i < sizeof(udpPacket); i++)
+    {
+        _tmp.concat(String::format("%02X ", udpPacket[i]));
+    }
+    lightLog.trace(_tmp);
 
 }
 
 void light::setPower(uint16_t level)
 {
-    //Serial.printlnf("Light setPower to %s...", onOff ? "On" : "Off");
+    //lightLog.trace("Light setPower to %s...", onOff ? "On" : "Off");
 
     setPower(level, 0);
 }
@@ -311,26 +298,20 @@ void light::setPower(uint16_t level, uint32_t duration)
     }
 
     /* Send UDP Packet */
-    // TODO
-    std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
-    _lightUdp->add(data);
+    // Add to UDP stack
+    std::vector<byte> _payload(udpPacket, udpPacket + sizeof(udpPacket));
+    _lightUdp->add(_lamp.ip, _payload);
 
-    /*if (WiFi.ready()) {
-        Serial.printlnf(Time.timeStr() + ":" + millis() + " - Light setPower - Sending UDP to 192.168.1.255:%d", _lamp.port);
-        if(_lightUdp.sendPacket(udpPacket, sizeof(udpPacket), _broadcastIP, _lamp.port) < 0)
-        {
-          Serial.printlnf(Time.timeStr() + ":" + millis() + " - Light setPower - Error in sending UDP");
-        }
-    }*/
+    // std::vector<byte> data(udpPacket, udpPacket + sizeof(udpPacket));
+    // _lightUdp->add(data);
 
-    #if _DEBUG > 2
-        Serial.printf(Time.timeStr() + ":" + millis() + " - Light setPower - UDP: 0x");
-        for(uint8_t i = 0; i < sizeof(udpPacket); i++)
-        {
-            Serial.printf("%02X ", udpPacket[i]);
-        }
-        Serial.println("");
-    #endif
+    _tmp = "light::setPower - UDP: 0x";
+    for(uint8_t i = 0; i < sizeof(udpPacket); i++)
+    {
+        _tmp.concat(String::format("%02X ", udpPacket[i]));
+    }
+    lightLog.trace(_tmp);
+
 }
 
 // Switch Functions

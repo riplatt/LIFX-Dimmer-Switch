@@ -18,7 +18,7 @@ public:
   void setBroadcastIP(IPAddress broadcastIP);
   void setRemotePort(uint16_t remotePort);
   void discover();                              // Find active lights
-  void addLight(uint8_t mac[6], uint32_t port); // Add light to Lights vector by mac address
+  void addLight(uint8_t mac[6], IPAddress ip, uint32_t port); // Add light to Lights vector by mac address
   void removeLight(uint8_t mac[6]);             // Remove light from Lights vector by mac address
   void togglePower();                           // Toggle power (on/off) of currently selected light/s
   void toggleColor();                           // Change currently selected light/s from color to white
@@ -27,7 +27,7 @@ public:
   void getStatus();                             // Get status of lights
   void getLocations();                          // Get locations of lights
   void getGroups();                             // Get groups of lights
-  void msgIn(uint8_t packetBuffer[128]);        // UDP message in
+  void msgIn(uint8_t packetBuffer[128], IPAddress ip);        // UDP message in
 
   /* Members */
   std::vector<light> Lights;

@@ -7,50 +7,50 @@
     /* includes */
     #include "common.h"
 
-    class device{
-        public:
-            /* Member Functions */
-            device();
-            void setUDP(lifxUDP *udpRef);
-            void setBroadcastIP(IPAddress broadcastIP);
-            void setRemotePort(uint16_t remotePort);
-            void getService();
-            void getPower();
-            void getLocation();
-            void getGroup();
+    class device
+    {
+    public:
+        /* Member Functions */
+        device();
+        void setUDP(lifxUDP *udpRef);
+        void setBroadcastIP(IPAddress broadcastIP);
+        void setRemotePort(uint16_t remotePort);
+        void getService();
+        void getPower();
+        void getLocation();
+        void getGroup();
 
-            /* Members */
-            struct Header
-            {
-                /* frame */
-                uint16_t size;
-                uint16_t protocol:12;
-                uint8_t  addressable:1;
-                uint8_t  tagged:1;
-                uint8_t  origin:2;
-                uint32_t source;
-                /* frame address */
-                uint8_t  target[8];
-                uint8_t  reservedA[6];
-                uint8_t  res_required:1;
-                uint8_t  ack_required:1;
-                uint8_t  reservedB:6;
-                uint8_t  sequence;
-                /* protocol header */
-                uint64_t reservedC;
-                uint16_t type;
-                uint16_t reservedD;
-            }__attribute__ ((__packed__));
+        /* Members */
+        // struct Header
+        // {
+        //     /* frame */
+        //     uint16_t size;
+        //     uint16_t protocol : 12;
+        //     uint8_t addressable : 1;
+        //     uint8_t tagged : 1;
+        //     uint8_t origin : 2;
+        //     uint32_t source;
+        //     /* frame address */
+        //     uint8_t target[8];
+        //     uint8_t reservedA[6];
+        //     uint8_t res_required : 1;
+        //     uint8_t ack_required : 1;
+        //     uint8_t reservedB : 6;
+        //     uint8_t sequence;
+        //     /* protocol header */
+        //     uint64_t reservedC;
+        //     uint16_t type;
+        //     uint16_t reservedD;
+        // } __attribute__((__packed__));
 
-        private:
-            /* Member Functions */
+    private:
+        /* Member Functions */
 
-            /* Members */
-            lifxUDP* _deviceUdp;
-            IPAddress _broadcastIP;
-        	uint16_t _remotePort;
-            String _tmp;
-
+        /* Members */
+        lifxUDP *_deviceUdp;
+        IPAddress _broadcastIP;
+        uint16_t _remotePort;
+        String _tmp;
     };
 
 #endif
