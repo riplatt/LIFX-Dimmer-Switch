@@ -245,7 +245,7 @@ void loop()
     // Store sender ip and port
     IPAddress senderIP = _lifxUDP.remoteIP();
     int port = _lifxUDP.remotePort();
-    _udpLog.trace("Sender IP:%d.%d.%d.%d:%d", senderIP[0], senderIP[1], senderIP[2], senderIP[3], port);
+    _udpLog.info("Sender IP:%d.%d.%d.%d:%d", senderIP[0], senderIP[1], senderIP[2], senderIP[3], port);
 
     // translate data
     LIFX.msgIn(_packetBuffer, senderIP);

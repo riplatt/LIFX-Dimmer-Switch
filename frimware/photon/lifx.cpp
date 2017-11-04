@@ -129,7 +129,7 @@ void lifx::toggleColor()
             // is colour mode, save colour state, get last white status and set to white mode
             Light.setLastColorHSBK(_hsbk);
             _hsbk.saturation = 0;
-            _hsbk = Light.getLastWhiteHSBK();
+            // _hsbk = Light.getLastWhiteHSBK();
             _colorMode = false;
         }
         else
@@ -137,7 +137,7 @@ void lifx::toggleColor()
             // is white mode, save white state, get last white status and set to colour mode
             Light.setLastWhiteHSBK(_hsbk);
             _hsbk.saturation = 65535;
-            _hsbk = Light.getLastColorHSBK();
+            // _hsbk = Light.getLastColorHSBK();
             _colorMode = true;
         }
         Light.setColorMode(_colorMode);
@@ -239,6 +239,7 @@ void lifx::getGroups()
 void lifx::msgIn(byte packetBuffer[128], IPAddress ip)
 {
     /*
+    TODO:
         is it a lifx msg
         is it for me (senders mac)
         Check for return type Status
@@ -263,8 +264,6 @@ void lifx::msgIn(byte packetBuffer[128], IPAddress ip)
     uint64_t lifxReservedC = (packetBuffer[24] + (packetBuffer[25] << 4) + (packetBuffer[26] << 8) + (packetBuffer[27] << 12)) + ((packetBuffer[28] + (packetBuffer[29] << 4) + (packetBuffer[30] << 8) + (packetBuffer[31] << 12)) << 16);
     uint16_t lifxPacketType = packetBuffer[32] + (packetBuffer[33] << 8);
     uint16_t lifxReservedD = packetBuffer[34] + (packetBuffer[35] << 8);
-
-    //lifxLog.trace("lifx::msgIn -- PacketType: %d", lifxPacketType);
 
     lifxLog.trace("lifx::msgIn - Header:");
     lifxLog.trace("lifx::msgIn -- Frame:");
@@ -363,7 +362,6 @@ void lifx::msgIn(byte packetBuffer[128], IPAddress ip)
                 Light.setSignal(_signal);
                 Light.setTx(_tx);
                 Light.setRx(_rx);
-                //Lights[i].setReserved(_reserved);
             }
         }
         break;
@@ -421,7 +419,7 @@ void lifx::msgIn(byte packetBuffer[128], IPAddress ip)
         //_lable              = _lable2.data();
         _reservedB = packetBuffer[80] + (packetBuffer[81] << 8) + (packetBuffer[82] << 16) + (packetBuffer[83] << 24) + (packetBuffer[84] << 32) + (packetBuffer[85] << 40) + (packetBuffer[86] << 48) + (packetBuffer[87] << 56);
 
-        //lifxLog.trace("lifx::msgIn - Raw:- Hue:%d, Saturation:%d, Brightness:%d, Kelvin:%d", _hsbk.hue, _hsbk.saturation, _hsbk.brightness, _hsbk.kelvin);
+        lifxLog.trace("lifx::msgIn - Raw:- Hue:%d, Saturation:%d, Brightness:%d, Kelvin:%d", _hsbk.hue, _hsbk.saturation, _hsbk.brightness, _hsbk.kelvin);
         lifxLog.trace("lifx::msgIn -- Hue: %0.2f", (float)(_hsbk.hue / (65535 / 359)));
         lifxLog.trace("lifx::msgIn -- Saturation: %0.2f", ((float)_hsbk.saturation / 65535.00) * 100.00);
         lifxLog.trace("lifx::msgIn -- Brightness: %0.2f", ((float)_hsbk.brightness / 65535.00) * 100.00);
@@ -455,12 +453,9 @@ void lifx::msgIn(byte packetBuffer[128], IPAddress ip)
           label	        string, size: 32 bytes
           updated_at	unsigned 64-bit integer */
 
-        //std::vector<byte> _location;
         std::vector<byte> _lableData;
         uint64_t _updatedAt;
 
-        /*_location = {packetBuffer[36], packetBuffer[37], packetBuffer[38], packetBuffer[39], packetBuffer[40], packetBuffer[41], packetBuffer[42], packetBuffer[43], packetBuffer[44], packetBuffer[45], packetBuffer[46], packetBuffer[47], packetBuffer[48], packetBuffer[49], packetBuffer[50], packetBuffer[51]};
-        std::string _lable1(_location.begin(), _location.end());*/
         _lableData = {packetBuffer[52], packetBuffer[53], packetBuffer[54], packetBuffer[55], packetBuffer[56], packetBuffer[57], packetBuffer[58], packetBuffer[59], packetBuffer[60], packetBuffer[61], packetBuffer[62], packetBuffer[63], packetBuffer[64], packetBuffer[65], packetBuffer[66], packetBuffer[67], packetBuffer[68], packetBuffer[69], packetBuffer[70], packetBuffer[71], packetBuffer[72], packetBuffer[73], packetBuffer[74], packetBuffer[75], packetBuffer[76], packetBuffer[77], packetBuffer[78], packetBuffer[79], packetBuffer[80], packetBuffer[81], packetBuffer[82], packetBuffer[83]};
         std::string _lable2(_lableData.begin(), _lableData.end());
         _updatedAt = packetBuffer[84] + (packetBuffer[85] << 8) + (packetBuffer[86] << 16) + (packetBuffer[87] << 24) + (packetBuffer[88] << 32) + (packetBuffer[89] << 40) + (packetBuffer[90] << 48) + (packetBuffer[91] << 56);
@@ -477,12 +472,9 @@ void lifx::msgIn(byte packetBuffer[128], IPAddress ip)
           label	        string, size: 32 bytes
           updated_at	unsigned 64-bit integer */
 
-        //std::vector<byte> _location;
         std::vector<byte> _lableData;
         uint64_t _updatedAt;
 
-        /*_location = {packetBuffer[36], packetBuffer[37], packetBuffer[38], packetBuffer[39], packetBuffer[40], packetBuffer[41], packetBuffer[42], packetBuffer[43], packetBuffer[44], packetBuffer[45], packetBuffer[46], packetBuffer[47], packetBuffer[48], packetBuffer[49], packetBuffer[50], packetBuffer[51]};
-        std::string _lable1(_location.begin(), _location.end());*/
         _lableData = {packetBuffer[52], packetBuffer[53], packetBuffer[54], packetBuffer[55], packetBuffer[56], packetBuffer[57], packetBuffer[58], packetBuffer[59], packetBuffer[60], packetBuffer[61], packetBuffer[62], packetBuffer[63], packetBuffer[64], packetBuffer[65], packetBuffer[66], packetBuffer[67], packetBuffer[68], packetBuffer[69], packetBuffer[70], packetBuffer[71], packetBuffer[72], packetBuffer[73], packetBuffer[74], packetBuffer[75], packetBuffer[76], packetBuffer[77], packetBuffer[78], packetBuffer[79], packetBuffer[80], packetBuffer[81], packetBuffer[82], packetBuffer[83]};
         std::string _lable2(_lableData.begin(), _lableData.end());
         _updatedAt = packetBuffer[84] + (packetBuffer[85] << 8) + (packetBuffer[86] << 16) + (packetBuffer[87] << 24) + (packetBuffer[88] << 32) + (packetBuffer[89] << 40) + (packetBuffer[90] << 48) + (packetBuffer[91] << 56);
@@ -495,14 +487,11 @@ void lifx::msgIn(byte packetBuffer[128], IPAddress ip)
     }
     default:
     {
-
         _tmp = "lifx::msgIn - Unknowen Payload:  0x ";
         for (int i = 36; i < lifxSize; i++)
         {
             _tmp.concat(String::format("%02X ", packetBuffer[i]));
-            //Serial.printf("%02X ", packetBuffer[i]);
         }
-        //Serial.println("");
         lifxLog.trace(_tmp);
         break;
     }
